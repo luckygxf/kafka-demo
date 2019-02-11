@@ -5,7 +5,7 @@ import org.apache.kafka.clients.producer.Partitioner;
 import org.apache.kafka.common.Cluster;
 
 /**
- * @Author: <guanxiangfei@meituan.com>
+ * @Author: <guanxianseng@163.com>
  * @Description: 自定义分区器 水果分区器
  * @Date: Created in : 2019/1/25 9:20 PM
  **/

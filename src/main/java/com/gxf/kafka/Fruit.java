@@ -1,7 +1,7 @@
 package com.gxf.kafka;
 
 /**
- * @Author: <guanxiangfei@meituan.com>
+ * @Author: <guanxianseng@163.com>
  * @Description:
  * @Date: Created in : 2019/1/25 9:21 PM
  **/
