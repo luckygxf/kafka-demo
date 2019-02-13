@@ -35,7 +35,8 @@ public class TestMultiBrokerProducer {
     while(count < 10000) {
       String value = "guanxianseng" + count ++;
 //      topic = ((count & 1) == 1) ? "test" : "test1";
-      producer.send(new ProducerRecord<String, String>(topic,null,value));
+      ProducerRecord<String, String> record2Send = new ProducerRecord<>(topic, 0, null, value);
+      producer.send(record2Send);
       logger.info("send msg:{} ================ ", value);
       Thread.sleep(1000);
     }

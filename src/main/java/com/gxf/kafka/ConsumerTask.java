@@ -42,6 +42,12 @@ public class ConsumerTask implements Runnable {
               record.topic(), record.partition(), record.offset(), record.key(), record.value());
         }
         Thread.sleep(1000);
+        if (count == 80) {
+          consumer.commitSync();
+          logger.info("commit msg-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
+        }
+        count --;
+//        consumer.commitAsync();
       }
       consumer.close();
       logger.info("consumer closed!========");
