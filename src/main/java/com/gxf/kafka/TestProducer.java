@@ -34,7 +34,7 @@ public class TestProducer {
     int count = 0;
     while(count < 10000) {
       String value = "guanxianseng" + count ++;
-      topic = ((count & 1) == 1) ? "test" : "test1";
+//      topic = ((count & 1) == 1) ? "test" : "test1";
       producer.send(new ProducerRecord<String, String>(topic,null,value));
       logger.info("send msg:{}, topic:{} ================ ", value, topic);
       Thread.sleep(1000);

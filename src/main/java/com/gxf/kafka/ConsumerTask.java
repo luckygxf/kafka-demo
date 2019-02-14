@@ -1,11 +1,20 @@
 package com.gxf.kafka;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
+import kafka.cluster.Partition;
+import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.common.TopicPartition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +29,7 @@ public class ConsumerTask implements Runnable {
   private static Logger logger = LoggerFactory.getLogger(ConsumerTask.class);
   private boolean isClose = false;
   private String topic;
+  private Map<TopicPartition, OffsetAndMetadata> currentOffset = new HashMap<>();
 
   public ConsumerTask(KafkaConsumer<String, String> consumer, int id, String topic) {
     this.consumer = consumer;
@@ -30,9 +40,10 @@ public class ConsumerTask implements Runnable {
   @Override
   public void run() {
     try {
-//      consumer.subscribe(Arrays.asList(topic));
-      Pattern pattern = Pattern.compile(topic);
-      consumer.subscribe(pattern);
+      List<String> topics = new ArrayList<>();
+      topics.add(topic);
+//      Pattern pattern = Pattern.compile(topic);
+      consumer.subscribe(topics, new RebananceHandler());
       int count = 100;
       while(count > 0 && !isClose) {
         Duration duration = Duration.ofSeconds(1);
@@ -40,6 +51,8 @@ public class ConsumerTask implements Runnable {
         for (ConsumerRecord<String, String> record : records) {
           logger.info("topic:{}, partition:{}, offset:{}, record.key:{}, recorde.value:{} ============",
               record.topic(), record.partition(), record.offset(), record.key(), record.value());
+          currentOffset.put(new TopicPartition(record.topic(), record.partition()),
+              new OffsetAndMetadata(record.offset() + 1, "no metadata"));
         }
         Thread.sleep(1000);
         if (count == 80) {
@@ -47,7 +60,8 @@ public class ConsumerTask implements Runnable {
           logger.info("commit msg-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
         }
         count --;
-//        consumer.commitAsync();
+        consumer.commitAsync(currentOffset, null);
+        currentOffset = new HashMap<>();
       }
       consumer.close();
       logger.info("consumer closed!========");
@@ -62,5 +76,21 @@ public class ConsumerTask implements Runnable {
 
   public void setClose(boolean close) {
     isClose = close;
+  }
+
+
+  private class RebananceHandler implements ConsumerRebalanceListener {
+
+    @Override
+    public void onPartitionsRevoked(Collection<TopicPartition> partitions) {
+      logger.info("");
+      logger.info("====trigger banance listener lost partition in rebalance offset:{} =====", currentOffset);
+      consumer.commitSync(currentOffset);
+    }
+
+    @Override
+    public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
+
+    }
   }
 }

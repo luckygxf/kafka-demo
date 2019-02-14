@@ -26,7 +26,7 @@ public class CommonUtil {
     Properties props = new Properties();
     props.put("bootstrap.servers", "localhost:9092");
     props.put("group.id", groupId);
-    props.put("enable.auto.commit", "true");
+    props.put("enable.auto.commit", "false");
     props.put("auto.commit.interval.ms", "1000");
     props.put("session.timeout.ms", "30000");
     props.put("max.poll.records", 1000);
