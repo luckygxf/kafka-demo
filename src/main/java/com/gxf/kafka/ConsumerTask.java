@@ -57,7 +57,9 @@ public class ConsumerTask implements Runnable {
         Thread.sleep(1000);
         if (count == 80) {
           consumer.commitSync();
-          logger.info("commit msg-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
+          logger.info("commit msg-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= and seek offset to 0");
+          for (TopicPartition topicPartition : consumer.assignment())
+            consumer.seek(topicPartition, 0);
         }
         count --;
         consumer.commitAsync(currentOffset, null);

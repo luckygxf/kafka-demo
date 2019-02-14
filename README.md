@@ -8,3 +8,4 @@
   2. topic使用正则表达式  
 5. rebanance listener  
   1. topic test 3个partition，一个consumer, 一个listener, 增加一个consumer触发rebanance listener  
+6. 使用seek函数，跳转到指定的offset  
