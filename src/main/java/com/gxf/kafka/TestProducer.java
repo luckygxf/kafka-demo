@@ -36,7 +36,7 @@ public class TestProducer {
       String value = "guanxianseng" + count ++;
       topic = ((count & 1) == 1) ? "test" : "test1";
       producer.send(new ProducerRecord<String, String>(topic,null,value));
-      logger.info("send msg:{} ================ ", value);
+      logger.info("send msg:{}, topic:{} ================ ", value, topic);
       Thread.sleep(1000);
     }
   }
