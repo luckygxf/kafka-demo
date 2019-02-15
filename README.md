@@ -14,3 +14,4 @@
   2. 手动指定topic和partition  
   3. 初始化consumer不设置groupid  
 8. 使用consumer.wakeup()退出consumer, 捕获wakeupException  
+9. 添加consumer.puase和consumer.resume demo  

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -49,7 +50,7 @@ public class Consumer {
         topicList.add("test");
         topicList.add("test1");
         consumer.subscribe(topicList);
-        int count = 100;
+        int count = Integer.MAX_VALUE;
         while(count > 0) {
           Duration duration = Duration.ofSeconds(1);
           ConsumerRecords<String, String> records = consumer.poll(duration);
@@ -57,7 +58,15 @@ public class Consumer {
             logger.info("topic:{}, partition:{}, offset:{}, key:{}, value:{} ======================= ",
                 record.topic(), record.partition(), record.offset(), record.key(), record.value());
           }
-          Thread.sleep(1000);
+          logger.info("consumer start paused=========");
+          Set<TopicPartition> topicPartitionSet = consumer.assignment();
+          for (TopicPartition topicPartition : topicPartitionSet)
+            logger.info("topicPartition:{}", topicPartition);
+          if (count == Integer.MAX_VALUE)
+            consumer.pause(topicPartitionSet);
+          if (count == Integer.MAX_VALUE - 20)
+            consumer.resume(consumer.paused());
+          count --;
         }
       } catch (WakeupException e){
         logger.error("catch WakeupException", e);
@@ -69,6 +78,23 @@ public class Consumer {
         logger.info("end close consumer");
       }
     }
+  }
+
+  private static void resumeConsumerThread(KafkaConsumer<String, String> consumer) {
+    Thread thread = new Thread(() -> {
+      try {
+        Thread.sleep(10000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      logger.info("start to resume consumer");
+//      Set<TopicPartition> topicPartitionSet = consumer.assignment();
+      Set<TopicPartition> topicPartitionSet = consumer.paused();
+      for (TopicPartition topicPartition : topicPartitionSet)
+        logger.info("topicPartition:{}", topicPartition);
+      consumer.resume(topicPartitionSet);
+    });
+    thread.start();
   }
 
   private static void assignConsumerPartition(KafkaConsumer<String, String> consumer) {
