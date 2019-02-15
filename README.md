@@ -9,3 +9,8 @@
 5. rebanance listener  
   1. topic test 3个partition，一个consumer, 一个listener, 增加一个consumer触发rebanance listener  
 6. 使用seek函数，跳转到指定的offset  
+7. 独立消费者  
+  1. 获取kafka集群的topic和partition  
+  2. 手动指定topic和partition  
+  3. 初始化consumer不设置groupid  
+8. 使用consumer.wakeup()退出consumer, 捕获wakeupException  

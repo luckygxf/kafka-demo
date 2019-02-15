@@ -10,6 +10,9 @@ import java.util.concurrent.Executors;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.PartitionInfo;
+import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.errors.WakeupException;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,17 +53,57 @@ public class Consumer {
         while(count > 0) {
           Duration duration = Duration.ofSeconds(1);
           ConsumerRecords<String, String> records = consumer.poll(duration);
-//          logger.info("id: {}, records.count():{} ======================= ", id, records.count());
           for (ConsumerRecord<String, String> record : records) {
             logger.info("topic:{}, partition:{}, offset:{}, key:{}, value:{} ======================= ",
                 record.topic(), record.partition(), record.offset(), record.key(), record.value());
           }
           Thread.sleep(1000);
         }
-      } catch (Exception e){
-        logger.error(e.getMessage(), e);
+      } catch (WakeupException e){
+        logger.error("catch WakeupException", e);
+      } catch (Exception e) {
+        logger.error("catch Exception", e);
+      } finally {
+        logger.info("start close consumer");
+        consumer.close();
+        logger.info("end close consumer");
       }
     }
+  }
+
+  private static void assignConsumerPartition(KafkaConsumer<String, String> consumer) {
+    String topic = "test";
+    int parttion = 1;
+    List<PartitionInfo> topicPartitionList = consumer.partitionsFor(topic);
+    for (PartitionInfo partitionInfo : topicPartitionList)
+      logger.info("topic:{}, partition:{}", partitionInfo.topic(), partitionInfo.partition());
+    //assign partition
+    List<TopicPartition> assignPartions = new ArrayList<>();
+    assignPartions.add(new TopicPartition(topic, parttion));
+    consumer.assign(assignPartions);
+  }
+
+  private static void startThreadToWakeupconsumer(KafkaConsumer<String, String> consumer){
+    Thread t = new Thread(() -> {
+      consumer.wakeup();
+    });
+    t.start();
+  }
+
+  private static void addExitConsumerHook(KafkaConsumer<String, String> consumer) throws Exception {
+    Thread mainThread = Thread.currentThread();
+    //add hook
+    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+      logger.info("trigger shutdown hook, start close consumer");
+      consumer.wakeup();
+      logger.info("close consumer success");
+      try {
+        mainThread.join();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }));
+    Thread.sleep(10000);
   }
 
 

@@ -10,8 +10,22 @@ import java.util.TreeMap;
  **/
 public class TestForEach {
 
-  public static void main(String[] args) {
-   testTreeMap();
+  public static void main(String[] args) throws InterruptedException {
+   testHook();
+   pause();
+  }
+
+  private static void testHook(){
+    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+      System.out.println("start execute shutdown hook");
+    }));
+  }
+
+  private static void pause() throws InterruptedException {
+    int count = 1;
+    while (count > 0) {
+      Thread.sleep(1000);
+    }
   }
 
   private static void testTreeMap() {
